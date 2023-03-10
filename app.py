@@ -43,7 +43,6 @@ def welcome():
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
-    # Create our session (link) from Python to the DB
     session = Session(engine)
 
     
@@ -63,8 +62,15 @@ def precipitation():
 
 #
 
+    prp = []
+    for prcp, date in prep:
+        prp_dict = {}
+        prp_dict["precipitation"] = prcp
+        prp_dict["date"] = date
+        prp.append(prp_dict)
 
-    return jsonify(prep)
+    return jsonify(prp) 
+
 
 
 ############################################
@@ -92,6 +98,8 @@ def stations():
     session = Session(engine)
     
     active_stations = session.query(Station.station, Station.name).all()
+    session.close() 
+    
     return jsonify(active_stations)
 
 ###################################################
@@ -107,6 +115,9 @@ def tobs():
 
     active = session.query(Measurement.tobs).filter(Measurement.station == 'USC00519281').\
                             filter(Measurement.date >= lastdate).all()
+    
+    session.close()  
+    
     return jsonify(active)
 
 ###################################################
@@ -124,14 +135,34 @@ def start():
     session = Session(engine)
 
     low_high_avg = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= date).all()
+
+    
+    session.close()  
+    
+    
+    
     return jsonify(low_high_avg)
 
-    return jsonify(low_high_avg)
+  #  prp = []
+  #  for prcp, date in prep:
+  #      prp_dict = {}
+  #      prp_dict["precipitation"] = prcp
+   #     prp_dict["date"] = date
+   #     prp.append(prp_dict)
+
+  #  return jsonify(prp) 
 
 
 
-
-
+    low_high_avg_list = []
+    for min, avg, max in low_high_avg:
+        low_high = {}
+        low_high["min"] = min
+        low_high["avg"] = avg
+        low_high["max"] = max
+        low_high_avg_list.append(low_high)
+    
+    return jsonify(low_high_avg_list)
 
 
 
@@ -151,7 +182,32 @@ def startend (startend):
     session = Session(engine)
 
     low_high_startend = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
-    return jsonify(low_high_startend)
+
+    session.close()      
+    
+    
+    #low_high_avg_list = []
+    #for min, avg, max in low_high_avg:
+    #    low_high = {}
+     #   low_high["min"] = min
+     #   low_high["avg"] = avg
+     #   low_high["max"] = max
+      #  low_high_avg_list.append(low_high)
+
+#    return jsonify(low_high_avg_list)    
+    
+    low_high_sstartend = []
+    for min, avg, max in low_high_startend:
+        low_highsst = {}
+        low_highsst["min"] = min
+        low_highsst["avg"] = avg
+        low_highsst["max"] = max
+        low_high_sstartend.append(low_highsst)    
+    
+    
+    
+    
+    return jsonify(low_high_sstartend)
 
 
 
